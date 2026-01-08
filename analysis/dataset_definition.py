@@ -1,9 +1,12 @@
 # copy from "https://github.com/opensafely/Pharmacy-First-protocol-2-healthcare-usage/blob/main/analysis/codelist.py"
+# opensafely exec ehrql:v1 generate-dataset analysis/dataset_definition.py
+# opensafely exec ehrql:v1 create-dummy-tables analysis/dataset_definition.py dummy-folder
 
 from ehrql import create_dataset
 from ehrql.tables.tpp import patients, practice_registrations, clinical_events
 import codelists
 dataset = create_dataset()
+dataset.configure_dummy_data(population_size=1000) # By default, ten patients will be generated in a dummy dataset. This line increases this number.
 
 start_date = "2024-01-31"
 
