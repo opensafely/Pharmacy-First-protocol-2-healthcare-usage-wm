@@ -1,15 +1,10 @@
-# copy from "https://github.com/opensafely/Pharmacy-First-protocol-2-healthcare-usage/blob/main/analysis/codelist.py"
-# opensafely exec ehrql:v1 generate-dataset analysis/dataset_definition.py
-# opensafely exec ehrql:v1 create-dummy-tables analysis/dataset_definition.py dummy-folder
-
-from ehrql import create_dataset
-from ehrql.tables.tpp import patients, practice_registrations, clinical_events, addresses
+from ehrql import create_dataset, show
+from ehrql.tables.tpp import patients, practice_registrations, clinical_events
 import codelists
 dataset = create_dataset()
-dataset.configure_dummy_data(population_size=1000) # By default, ten patients will be generated in a dummy dataset. This line increases this number.
 
 start_date = "2024-01-31"
-
+        #change to end of month
 index_date = "2025-11-30"
 registration_start = practice_registrations.for_patient_on(start_date)
 registration_end = practice_registrations.for_patient_on(index_date)
@@ -20,21 +15,15 @@ pf_consultation_events = selected_events.where(selected_events.snomedct_code.is_
 
  
 dataset.has_pf_consultation = pf_consultation_events.exists_for_patient()
- 
+    #add PF condition codes and check consultation ID matches
 pf_ids = pf_consultation_events.consultation_id
 selected_pf_id_events = selected_events.where(
     selected_events.consultation_id.is_in(pf_ids)
 )
 dataset.sex = patients.sex
 dataset.age = patients.age_on(index_date)
-dataset.region = practice_registrations.for_patient_on(index_date).practice_nuts1_region_name
-
-
-patient_address = addresses.for_patient_on(index_date)
-dataset.imd_rounded = patient_address.imd_rounded
-dataset.rural_urban = addresses.for_patient_on(index_date).rural_urban_classification
-
 dataset.define_population(registration_start.exists_for_patient() | registration_end.exists_for_patient()) 
 
+    #add IMD, ethnicity, STP, region
 
-
+show(dataset)
